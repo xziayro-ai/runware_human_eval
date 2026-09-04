@@ -41,6 +41,7 @@ CONFIG_EXCLUDED_KEYS = {
     "provider",
     "callback_url",
     "nsfw_check",
+    "prefix",
 }
 
 

@@ -21,6 +21,17 @@ function stableStringify(value: unknown): string {
   return JSON.stringify(value);
 }
 
+// Bookkeeping keys that vary per upload run but don't describe the generation
+// config itself (e.g. the storage folder name) — ignored when matching configs.
+const CONFIG_KEYS_IGNORED_FOR_MATCH = new Set(["prefix"]);
+
+function configForMatch(experiment: Experiment): string {
+  const entries = Object.entries(experiment.config).filter(
+    ([key]) => !CONFIG_KEYS_IGNORED_FOR_MATCH.has(key),
+  );
+  return stableStringify(Object.fromEntries(entries));
+}
+
 export default function BattleDetailPage({ params }: Props) {
   const { id } = use(params);
   const router = useRouter();
@@ -89,27 +100,13 @@ export default function BattleDetailPage({ params }: Props) {
     await load();
   };
 
-  const removeMember = async (experimentId: string) => {
-    const { error: errDelete } = await supabase
-      .from("battle_experiments")
-      .delete()
-      .eq("battle_id", id)
-      .eq("experiment_id", experimentId);
-    if (errDelete) {
-      setError(errDelete.message);
-      return;
-    }
-    await load();
-  };
-
   // Random matchup: only pair members that share the exact same config, so the
   // vote is always a fair apples-to-apples comparison (same resolution/settings/etc).
   const voteRandomly = () => {
     if (!members || members.length < 2) return;
-    const configOf = (e: Experiment) => stableStringify(e.config);
     const groups = new Map<string, Experiment[]>();
     for (const member of members) {
-      const key = configOf(member);
+      const key = configForMatch(member);
       const group = groups.get(key) ?? [];
       group.push(member);
       groups.set(key, group);
@@ -174,9 +171,6 @@ export default function BattleDetailPage({ params }: Props) {
                 ({m.renders?.[0]?.count ?? 0} renders)
               </span>
             </div>
-            <button className="btn secondary" onClick={() => removeMember(m.id)}>
-              Remove
-            </button>
           </div>
         ))}
         {availableToAdd.length > 0 && (
