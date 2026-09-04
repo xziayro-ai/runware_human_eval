@@ -423,7 +423,9 @@ export default function ComparePage({ params }: Props) {
           aria-label="Left is better"
           title="Left is better (←)"
         >
-          ←
+          <span>←</span>
+          <span className="arrow-label">Left is better</span>
+          <kbd className="key-hint">←</kbd>
         </button>
         <button
           className="btn secondary arrow-btn"
@@ -432,7 +434,9 @@ export default function ComparePage({ params }: Props) {
           aria-label="Tie"
           title="Tie (↑/↓)"
         >
-          ↕
+          <span>↕</span>
+          <span className="arrow-label">Tie</span>
+          <kbd className="key-hint">↑ / ↓</kbd>
         </button>
         <button
           className="btn arrow-btn"
@@ -441,7 +445,9 @@ export default function ComparePage({ params }: Props) {
           aria-label="Right is better"
           title="Right is better (→)"
         >
-          →
+          <span>→</span>
+          <span className="arrow-label">Right is better</span>
+          <kbd className="key-hint">→</kbd>
         </button>
       </div>
     </div>
