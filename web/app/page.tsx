@@ -36,7 +36,8 @@ export default function HomePage() {
         Upload renders with the Python script (
         <code>scripts/upload_results.py</code>), then pick two experiments below
         to start voting on human preferences. See the{" "}
-        <a href="/leaderboard">Elo leaderboard →</a>.
+        <a href="/leaderboard">Elo leaderboard →</a> or group experiments into
+        a <a href="/battles">battle →</a> for random matchups and scoped Elo.
       </p>
 
       {error && <p style={{ color: "#ff6b6b" }}>{error}</p>}

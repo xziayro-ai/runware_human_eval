@@ -56,21 +56,43 @@ alter table votes add constraint votes_experiment_a_id_experiment_b_id_request_i
 -- Migration: add timings to a renders table created before this column existed.
 alter table renders add column if not exists timings jsonb not null default '{}'::jsonb;
 
+-- A "battle" is a curated set of experiments that vote/Elo against each other.
+-- Grouping experiments into battles lets the leaderboard restrict Elo comparisons
+-- to only the experiments meant to compete together (instead of the global pool).
+create table if not exists battles (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  description text not null default '',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists battle_experiments (
+  battle_id uuid not null references battles(id) on delete cascade,
+  experiment_id uuid not null references experiments(id) on delete cascade,
+  primary key (battle_id, experiment_id)
+);
+
 create index if not exists idx_renders_experiment on renders (experiment_id);
 create index if not exists idx_renders_request on renders (request_id);
 create index if not exists idx_renders_task_uuid on renders (task_uuid);
 create index if not exists idx_votes_pair on votes (experiment_a_id, experiment_b_id);
 create index if not exists idx_votes_voter on votes (voter_name);
+create index if not exists idx_battle_experiments_battle on battle_experiments (battle_id);
+create index if not exists idx_battle_experiments_experiment on battle_experiments (experiment_id);
 
 -- Disable RLS: tables are fully public (read/write) as requested for ease of use.
 alter table experiments disable row level security;
 alter table renders disable row level security;
 alter table votes disable row level security;
+alter table battles disable row level security;
+alter table battle_experiments disable row level security;
 
 grant usage on schema public to anon, authenticated;
 grant select, insert, update on experiments to anon, authenticated;
 grant select, insert, update on renders to anon, authenticated;
 grant select, insert on votes to anon, authenticated;
+grant select, insert, update, delete on battles to anon, authenticated;
+grant select, insert, delete on battle_experiments to anon, authenticated;
 
 -- Storage bucket for renders (images/videos), public read access.
 insert into storage.buckets (id, name, public)

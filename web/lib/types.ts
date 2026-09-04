@@ -28,6 +28,18 @@ export type Vote = {
   created_at: string;
 };
 
+export type Battle = {
+  id: string;
+  name: string;
+  description: string;
+  created_at: string;
+};
+
+export type BattleExperiment = {
+  battle_id: string;
+  experiment_id: string;
+};
+
 /** Always returns [smaller, larger] so a pair of experiments has one canonical identity. */
 export function canonicalPair(x: string, y: string): [string, string] {
   return x < y ? [x, y] : [y, x];
