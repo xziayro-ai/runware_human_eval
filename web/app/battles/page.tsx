@@ -117,9 +117,8 @@ export default function BattlesPage() {
       <h1>Battles</h1>
       <p className="muted">
         A battle is a curated set of experiments that vote/Elo against each
-        other. Group experiments into a battle to compare and rank only
-        within that group. See the global{" "}
-        <a href="/leaderboard">leaderboard →</a>.
+        other. Group experiments into a battle to compare and rank only within
+        that group. See the global <a href="/leaderboard">leaderboard →</a>.
       </p>
 
       {battles.length === 0 && (

@@ -3,7 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Battle, BattleExperiment, Experiment, Vote } from "@/lib/types";
-import { computeEloRows, INITIAL_RATING, K_FACTOR, BOOTSTRAP_ITERATIONS, type EloRow } from "@/lib/elo";
+import {
+  computeEloRows,
+  INITIAL_RATING,
+  K_FACTOR,
+  BOOTSTRAP_ITERATIONS,
+  type EloRow,
+} from "@/lib/elo";
 
 export default function LeaderboardPage() {
   const [experiments, setExperiments] = useState<Experiment[] | null>(null);

@@ -186,12 +186,14 @@ export default function ComparePage({ params }: Props) {
 
   // Keep both sides paused/playing together, whichever one the user interacts with.
   const onVideoPause = useCallback((side: "left" | "right") => {
-    const other = side === "left" ? rightVideoRef.current : leftVideoRef.current;
+    const other =
+      side === "left" ? rightVideoRef.current : leftVideoRef.current;
     other?.pause();
   }, []);
 
   const onVideoPlay = useCallback((side: "left" | "right") => {
-    const other = side === "left" ? rightVideoRef.current : leftVideoRef.current;
+    const other =
+      side === "left" ? rightVideoRef.current : leftVideoRef.current;
     other?.play().catch(() => {});
   }, []);
 

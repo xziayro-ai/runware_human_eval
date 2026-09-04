@@ -4,7 +4,12 @@ import { use, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { Battle, Experiment, Vote } from "@/lib/types";
-import { computeEloRows, INITIAL_RATING, K_FACTOR, BOOTSTRAP_ITERATIONS } from "@/lib/elo";
+import {
+  computeEloRows,
+  INITIAL_RATING,
+  K_FACTOR,
+  BOOTSTRAP_ITERATIONS,
+} from "@/lib/elo";
 
 type ExperimentWithCount = Experiment & { renders: { count: number }[] };
 type Props = { params: Promise<{ id: string }> };
@@ -15,7 +20,10 @@ function stableStringify(value: unknown): string {
   if (value && typeof value === "object") {
     const keys = Object.keys(value as Record<string, unknown>).sort();
     return `{${keys
-      .map((k) => `${JSON.stringify(k)}:${stableStringify((value as Record<string, unknown>)[k])}`)
+      .map(
+        (k) =>
+          `${JSON.stringify(k)}:${stableStringify((value as Record<string, unknown>)[k])}`,
+      )
       .join(",")}}`;
   }
   return JSON.stringify(value);
@@ -64,7 +72,11 @@ export default function BattleDetailPage({ params }: Props) {
     ]);
     if (errBattle || errMembers || errE || errV) {
       setError(
-        errBattle?.message || errMembers?.message || errE?.message || errV?.message || "",
+        errBattle?.message ||
+          errMembers?.message ||
+          errE?.message ||
+          errV?.message ||
+          "",
       );
       return;
     }
@@ -186,7 +198,11 @@ export default function BattleDetailPage({ params }: Props) {
                 </option>
               ))}
             </select>
-            <button className="btn secondary" disabled={!addingId} onClick={addMember}>
+            <button
+              className="btn secondary"
+              disabled={!addingId}
+              onClick={addMember}
+            >
               Add
             </button>
           </div>
@@ -242,8 +258,8 @@ export default function BattleDetailPage({ params }: Props) {
         <div className="card">
           <h3>Battle leaderboard</h3>
           <p className="muted">
-            Elo from votes among this battle's members only (K={K_FACTOR},
-            start {INITIAL_RATING}, {BOOTSTRAP_ITERATIONS} bootstrap resamples).
+            Elo from votes among this battle's members only (K={K_FACTOR}, start{" "}
+            {INITIAL_RATING}, {BOOTSTRAP_ITERATIONS} bootstrap resamples).
           </p>
           <table className="results-table">
             <thead>

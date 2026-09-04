@@ -36,8 +36,8 @@ export default function ExperimentsPage() {
         All experiments, regardless of battle. Upload renders with the Python
         script (<code>scripts/upload_results.py</code>), then pick two
         experiments below to compare them ad hoc. Prefer{" "}
-        <a href="/battles">battles →</a> for grouped random matchups and
-        scoped Elo.
+        <a href="/battles">battles →</a> for grouped random matchups and scoped
+        Elo.
       </p>
 
       {error && <p style={{ color: "#ff6b6b" }}>{error}</p>}

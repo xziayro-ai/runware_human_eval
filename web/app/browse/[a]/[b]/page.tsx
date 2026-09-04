@@ -28,12 +28,8 @@ export default function BrowsePage({ params }: Props) {
 
   const [expA, setExpA] = useState<Experiment | null>(null);
   const [expB, setExpB] = useState<Experiment | null>(null);
-  const [rendersA, setRendersA] = useState<Record<string, Render> | null>(
-    null,
-  );
-  const [rendersB, setRendersB] = useState<Record<string, Render> | null>(
-    null,
-  );
+  const [rendersA, setRendersA] = useState<Record<string, Render> | null>(null);
+  const [rendersB, setRendersB] = useState<Record<string, Render> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
 
@@ -56,7 +52,9 @@ export default function BrowsePage({ params }: Props) {
         supabase.from("renders").select("*").eq("experiment_id", urlB),
       ]);
       if (errE || errA || errB) {
-        setError(errE?.message || errA?.message || errB?.message || "Failed to load");
+        setError(
+          errE?.message || errA?.message || errB?.message || "Failed to load",
+        );
         return;
       }
       setExpA(experiments?.find((e) => e.id === canonA) ?? null);
@@ -192,12 +190,14 @@ export default function BrowsePage({ params }: Props) {
 
   // Keep both sides paused/playing together, whichever one the user interacts with.
   const onVideoPause = useCallback((side: "left" | "right") => {
-    const other = side === "left" ? rightVideoRef.current : leftVideoRef.current;
+    const other =
+      side === "left" ? rightVideoRef.current : leftVideoRef.current;
     other?.pause();
   }, []);
 
   const onVideoPlay = useCallback((side: "left" | "right") => {
-    const other = side === "left" ? rightVideoRef.current : leftVideoRef.current;
+    const other =
+      side === "left" ? rightVideoRef.current : leftVideoRef.current;
     other?.play().catch(() => {});
   }, []);
 
@@ -333,7 +333,11 @@ function GlobalStats({
     ["cost", stats.costA, stats.costB, "$"],
   ];
   const fmt = (v: number | null, unit: string) =>
-    v == null ? "—" : unit === "$" ? `$${v.toFixed(4)}` : `${v.toFixed(2)}${unit}`;
+    v == null
+      ? "—"
+      : unit === "$"
+        ? `$${v.toFixed(4)}`
+        : `${v.toFixed(2)}${unit}`;
   return (
     <div className="card" style={{ marginTop: 16 }}>
       <h3 style={{ marginTop: 0 }}>Global averages</h3>
@@ -348,7 +352,8 @@ function GlobalStats({
         <tbody>
           {rows.map(([label, a, b, unit]) => {
             // Lower is better for both timings (s) and cost ($).
-            const winner = a != null && b != null && a !== b ? (a < b ? "a" : "b") : null;
+            const winner =
+              a != null && b != null && a !== b ? (a < b ? "a" : "b") : null;
             return (
               <tr key={label}>
                 <td>{label}</td>
@@ -364,9 +369,11 @@ function GlobalStats({
         </tbody>
       </table>
       <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>
-        {ratioLabel(stats.infA, stats.infB, nameA, nameB, "faster") ?? "Not enough timing data for a speed comparison."}
+        {ratioLabel(stats.infA, stats.infB, nameA, nameB, "faster") ??
+          "Not enough timing data for a speed comparison."}
         <br />
-        {ratioLabel(stats.costA, stats.costB, nameA, nameB, "cheaper") ?? "Not enough cost data for a cost comparison."}
+        {ratioLabel(stats.costA, stats.costB, nameA, nameB, "cheaper") ??
+          "Not enough cost data for a cost comparison."}
       </p>
     </div>
   );
