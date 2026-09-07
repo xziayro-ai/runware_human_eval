@@ -48,3 +48,32 @@ export function canonicalPair(x: string, y: string): [string, string] {
 export function naturalSort(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
 }
+
+/** Pulls http(s):// image URLs out of request metadata (keys mentioning "image", e.g. seedImage/referenceImages).
+ * Values that aren't URLs (e.g. a local file path) are resolved by basename against
+ * `bucketBasenameIndex` (basename -> public URL), if provided. */
+export function extractImageUrls(
+  metadata: Record<string, unknown>,
+  bucketBasenameIndex?: Record<string, string>,
+): string[] {
+  const resolve = (v: unknown): string | null => {
+    if (typeof v !== "string" || !v) return null;
+    if (/^https?:\/\//.test(v)) return v;
+    const basename = v.split(/[\\/]/).pop() ?? v;
+    return bucketBasenameIndex?.[basename] ?? null;
+  };
+  const urls: string[] = [];
+  for (const [key, value] of Object.entries(metadata)) {
+    if (!/image/i.test(key)) continue;
+    const direct = resolve(value);
+    if (direct) {
+      urls.push(direct);
+    } else if (Array.isArray(value)) {
+      for (const item of value) {
+        const resolved = resolve(item);
+        if (resolved) urls.push(resolved);
+      }
+    }
+  }
+  return urls;
+}

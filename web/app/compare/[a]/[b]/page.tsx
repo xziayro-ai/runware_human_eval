@@ -10,7 +10,8 @@ import {
   type RefObject,
 } from "react";
 import { supabase } from "@/lib/supabase";
-import { canonicalPair, naturalSort, type Render } from "@/lib/types";
+import { buildBucketBasenameIndex } from "@/lib/bucket";
+import { canonicalPair, extractImageUrls, naturalSort, type Render } from "@/lib/types";
 import { getVoterName, onVoterNameChange } from "@/lib/voter";
 
 type Props = { params: Promise<{ a: string; b: string }> };
@@ -30,6 +31,7 @@ export default function ComparePage({ params }: Props) {
   const [leftIsA, setLeftIsA] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [bucketIndex, setBucketIndex] = useState<Record<string, string>>({});
 
   const leftVideoRef = useRef<HTMLVideoElement | null>(null);
   const rightVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -78,6 +80,19 @@ export default function ComparePage({ params }: Props) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Fetch the two experiments' storage folder names (tags) so non-URL image
+  // references in metadata can be resolved against the actual bucket contents.
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("experiments")
+        .select("tag")
+        .in("id", [canonA, canonB]);
+      const tags = (data ?? []).map((e) => e.tag as string);
+      setBucketIndex(await buildBucketBasenameIndex(tags));
+    })();
+  }, [canonA, canonB]);
 
   const common = useMemo(() => {
     if (!rendersA || !rendersB) return [];
@@ -324,7 +339,7 @@ export default function ComparePage({ params }: Props) {
   const prompt =
     (requestMetadata.positivePrompt as string | undefined) ??
     (requestMetadata.prompt as string | undefined);
-  const referenceImages = extractImageUrls(requestMetadata);
+  const referenceImages = extractImageUrls(requestMetadata, bucketIndex);
 
   return (
     <div className="compare-page">
@@ -454,23 +469,6 @@ export default function ComparePage({ params }: Props) {
       </div>
     </div>
   );
-}
-
-/** Pulls https:// image URLs out of request metadata (keys mentioning "image", e.g. seedImage/referenceImages). */
-function extractImageUrls(metadata: Record<string, unknown>): string[] {
-  const urls: string[] = [];
-  for (const [key, value] of Object.entries(metadata)) {
-    if (!/image/i.test(key)) continue;
-    if (typeof value === "string" && value.startsWith("https://")) {
-      urls.push(value);
-    } else if (Array.isArray(value)) {
-      for (const item of value) {
-        if (typeof item === "string" && item.startsWith("https://"))
-          urls.push(item);
-      }
-    }
-  }
-  return urls;
 }
 
 function Pane({

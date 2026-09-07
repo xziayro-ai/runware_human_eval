@@ -51,9 +51,17 @@ export default function BattleDetailPage({ params }: Props) {
   >(null);
   const [votes, setVotes] = useState<Vote[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectedA, setSelectedA] = useState("");
-  const [selectedB, setSelectedB] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState("");
+
+  const toggleSelected = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const load = useCallback(async () => {
     const [
@@ -92,7 +100,9 @@ export default function BattleDetailPage({ params }: Props) {
     load();
   }, [load]);
 
-  const canCompare = selectedA && selectedB && selectedA !== selectedB;
+  const selectedIds = useMemo(() => Array.from(selected), [selected]);
+  const canCompare = selectedIds.length === 2;
+  const canBrowse = selectedIds.length >= 2;
 
   const eloRows = useMemo(() => {
     if (!members || !votes) return null;
@@ -212,41 +222,36 @@ export default function BattleDetailPage({ params }: Props) {
       {members.length >= 2 && (
         <div className="card">
           <h3>Pick a specific matchup</h3>
-          <div className="row" style={{ gap: 12, flexWrap: "wrap" }}>
-            <select
-              value={selectedA}
-              onChange={(e) => setSelectedA(e.target.value)}
-            >
-              <option value="">Experiment A…</option>
-              {members.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
-                </option>
-              ))}
-            </select>
-            <span className="muted">vs</span>
-            <select
-              value={selectedB}
-              onChange={(e) => setSelectedB(e.target.value)}
-            >
-              <option value="">Experiment B…</option>
-              {members.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
-                </option>
-              ))}
-            </select>
+          <p className="muted">
+            Pick exactly 2 members to vote, or 2+ to just browse them side by side.
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            {members.map((e) => (
+              <label
+                key={e.id}
+                style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.has(e.id)}
+                  onChange={() => toggleSelected(e.id)}
+                />
+                {e.name}
+              </label>
+            ))}
+          </div>
+          <div className="row" style={{ gap: 12, marginTop: 12, justifyContent: "flex-start" }}>
             <button
               className="btn"
               disabled={!canCompare}
-              onClick={() => router.push(`/compare/${selectedA}/${selectedB}`)}
+              onClick={() => router.push(`/compare/${selectedIds[0]}/${selectedIds[1]}`)}
             >
               Compare →
             </button>
             <button
               className="btn secondary"
-              disabled={!canCompare}
-              onClick={() => router.push(`/browse/${selectedA}/${selectedB}`)}
+              disabled={!canBrowse}
+              onClick={() => router.push(`/browse/${selectedIds.join("/")}`)}
             >
               Browse (no vote) →
             </button>

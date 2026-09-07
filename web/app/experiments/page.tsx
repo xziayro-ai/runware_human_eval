@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { Experiment } from "@/lib/types";
@@ -12,8 +12,16 @@ export default function ExperimentsPage() {
   const [experiments, setExperiments] = useState<ExperimentWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedA, setSelectedA] = useState("");
-  const [selectedB, setSelectedB] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const toggleSelected = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   useEffect(() => {
     supabase
@@ -27,7 +35,9 @@ export default function ExperimentsPage() {
       });
   }, []);
 
-  const canCompare = selectedA && selectedB && selectedA !== selectedB;
+  const selectedIds = useMemo(() => Array.from(selected), [selected]);
+  const canCompare = selectedIds.length === 2;
+  const canBrowse = selectedIds.length >= 2;
 
   return (
     <div>
@@ -63,41 +73,36 @@ export default function ExperimentsPage() {
       {experiments.length >= 2 && (
         <div className="card">
           <h3>Start a comparison</h3>
-          <div className="row" style={{ gap: 12, flexWrap: "wrap" }}>
-            <select
-              value={selectedA}
-              onChange={(e) => setSelectedA(e.target.value)}
-            >
-              <option value="">Experiment A…</option>
-              {experiments.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
-                </option>
-              ))}
-            </select>
-            <span className="muted">vs</span>
-            <select
-              value={selectedB}
-              onChange={(e) => setSelectedB(e.target.value)}
-            >
-              <option value="">Experiment B…</option>
-              {experiments.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
-                </option>
-              ))}
-            </select>
+          <p className="muted">
+            Pick exactly 2 experiments to vote, or 2+ to just browse them side by side.
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            {experiments.map((e) => (
+              <label
+                key={e.id}
+                style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.has(e.id)}
+                  onChange={() => toggleSelected(e.id)}
+                />
+                {e.name}
+              </label>
+            ))}
+          </div>
+          <div className="row" style={{ gap: 12, marginTop: 12, justifyContent: "flex-start" }}>
             <button
               className="btn"
               disabled={!canCompare}
-              onClick={() => router.push(`/compare/${selectedA}/${selectedB}`)}
+              onClick={() => router.push(`/compare/${selectedIds[0]}/${selectedIds[1]}`)}
             >
               Compare →
             </button>
             <button
               className="btn secondary"
-              disabled={!canCompare}
-              onClick={() => router.push(`/browse/${selectedA}/${selectedB}`)}
+              disabled={!canBrowse}
+              onClick={() => router.push(`/browse/${selectedIds.join("/")}`)}
             >
               Browse (no vote) →
             </button>
